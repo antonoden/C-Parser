@@ -1,0 +1,7 @@
+So to run these files in windows machine. Download the following Docker image:
+docker run -it gcc
+
+Then run the following command to start up the Docker container (location is user depentent)
+docker run -it --rm -v C:\Users\anton\Code\Karlstad-University\Programming-languages-DVGC01\Lab1-C-Parser:/usr/src/app -w /usr/src/app gcc bash  
+
+Ifall nått krånglar så är de troligtvis DOcker som har något emot filsökvägen
