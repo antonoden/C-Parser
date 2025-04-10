@@ -35,7 +35,8 @@ static int  plex  = 0;               /* current index lexeme  buffer  */
 /**********************************************************************/
 
 static void get_prog()
-{
+{   
+    fgets(buffer, BUFSIZE, stdin);
     printf("\n *** TO BE DONE");
 }
 

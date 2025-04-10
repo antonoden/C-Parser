@@ -1,0 +1,4 @@
+Bashcommand to send and recieve information from/into files
+./program < file (stdin)
+./program > file (stdout)
+./program 2> file (stderr)
