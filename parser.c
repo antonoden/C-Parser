@@ -21,21 +21,28 @@
 /* OBJECT ATTRIBUTES FOR THIS OBJECT (C MODULE)                       */
 /**********************************************************************/
 #define DEBUG 1
-#define DEEPDEBUG 1
+#define DEEPDEBUG 0
 static int  lookahead=0;
 static int  is_parse_ok=1;
 
 /**********************************************************************/
-/* RAPID PROTOTYPING - simulate the token stream & lexer (get_token)  */
-/**********************************************************************/
-/**********************************************************************/
 /* Simulate the token stream for a given program         
-       */
+      program testok7(input, output);
+var
+    A: integer;
+    B: integer;
+    C: integer;
+
+begin
+A := B + C * 2
+end. */
 /**********************************************************************/
 static int tokens[] = {program, id, '(', input, ',', output, ')', ';',
-                        var,    id, ',', number, ',', assign, ':', integer, ';',
+                        var,    id, ':', integer, ';',
+                                id, ':', integer, ';',
+                                id, ':', integer, ';',
                             begin, 
-                                id, assign, '(', number, '+', assign, ')', '*', number,
+                                id, assign, id, '+', id, '*', number,
                             end, '.',
                '$' };
 
@@ -65,14 +72,14 @@ static void out(char* s)
 /**********************************************************************/
 static void match(int t)
 {
-    if(DEBUG) printf("\n *** In  match\t\texpected: %4s, found: %4s",
-                    tok2lex(t), tok2lex(lookahead));
-    if (lookahead == t) lookahead = pget_token();
-    else {
-    is_parse_ok=0;
-    printf("\n *** Unexpected Token: expected: %4s found: %4s (in match)",
-              tok2lex(t), tok2lex(lookahead));
+    if(DEBUG) printf("\n *** In  match      expected: %4s, found: %4s",
+            tok2lex(t), tok2lex(lookahead));
+    if (lookahead != t) {
+        is_parse_ok=0;
+        printf("\n *** Unexpected Token: expected: %4s found: %4s (in match)",
+            tok2lex(t), tok2lex(lookahead));
     }
+    lookahead = pget_token();    
 }
 
 /**********************************************************************/
@@ -81,6 +88,7 @@ static void match(int t)
 /**********************************************************************/
 
 /* STAT STATEMENT PART */
+static void expr();
 static void operand()
 {
     if(DEEPDEBUG) in("operand");
@@ -95,7 +103,11 @@ static void operand()
 static void factor()
 {
     if(DEEPDEBUG) in("factor");
-    operand();
+    if(lookahead == '(') {
+        match('('); expr(); match(')');
+    } else {
+        operand();
+    }
     if(DEEPDEBUG) out("factor");
 }
 
