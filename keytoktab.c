@@ -131,6 +131,17 @@ void p_toktab()
 /**********************************************************************/
 /* lex2tok - convert a lexeme to a token                              */
 /**********************************************************************/
+static int is_number(char * str) 
+{
+    if(*str == '\0') return 0; // empty string != number
+
+    while (*str && *str != '\0') {
+        if (!isdigit(*str)) return 0; // found a non-digit character
+        str ++;
+    }
+    return 1; // string contains only digits
+}
+
 toktyp lex2tok(char * fplex)
 {
     // check for lexeme in tokentable
@@ -145,7 +156,9 @@ toktyp lex2tok(char * fplex)
             return keywordtab[i].token;
         }
     }
-    // if no matching lexeme found in tables set lexeme as an id.  
+    // if no matching lexeme found in tables, final check if lexeme is number 
+    if(is_number(fplex)) 
+        return number; 
     return id;
 }
 
