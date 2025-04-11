@@ -51,19 +51,23 @@ static void get_prog()
 /**********************************************************************/
 /* Display the buffer                                                 */
 /**********************************************************************/
-
-static void p_newline(int num, char * symbol)
+static void p_divider(int num, char * symbol)
 {
     for(int i = 0; i < num; i++) {
         printf("%s", symbol);
     } printf(" \n");
 }
 
+static void p_headertext(char *headline) 
+{
+    printf(" %s \n", headline);
+}
+
 static void pbuffer()
 {
-    p_newline(56, "_");
-    printf(" THE PROGRAM TEXT\n");
-    p_newline(56, "_");
+    p_divider(56, "_");
+    p_headertext("THE PROGRAM TEXT");
+    p_divider(56, "_");
     for(int i=0; i<BUFSIZE; i++) {
         printf("%c", buffer[i]);
         if(buffer[i] == '$') {
@@ -71,7 +75,7 @@ static void pbuffer()
             i=BUFSIZE;
         } 
     }
-    p_newline(56, "_");
+    p_divider(56, "_");
 }
 
 /**********************************************************************/

@@ -73,25 +73,16 @@ long int keywordtablen = sizeof(keywordtab)/sizeof(tab);
 /**********************************************************************/
 /* Display the tables                                                 */
 /**********************************************************************/
-static void p_newline(int num, char * symbol)
+static void p_divider(int num, char * symbol)
 {
     for(int i = 0; i < num; i++) {
         printf("%s", symbol);
     } printf(" \n");
 }
 
-static void p_keywordtabheader() 
+static void p_headertext(char *headline) 
 {
-    p_newline(56, "_");
-    printf(" THE PROGRAM KEYWORDS \n");
-    p_newline(56, "_");
-}
-
-static void p_toktabheader() 
-{
-    p_newline(56, "_");
-    printf(" THE PROGRAM TOKENS \n");
-    p_newline(56, "_");
+    printf(" %s \n", headline);
 }
 
 static void p_spaces(int number)
@@ -113,19 +104,23 @@ static int count_digits(int number)
 
 void p_toktab()
 {
-    p_keywordtabheader();
+    p_divider(56, "_");
+    p_headertext("THE PROGRAM KEYWORDS");
+    p_divider(56, "_");
     for(int i=0; i<keywordtablen-1; i++) {
         p_spaces(11-strlen(keywordtab[i].text));
         printf("%s  %d \n",  keywordtab[i].text, keywordtab[i].token);
     }
-    p_toktabheader();
+    p_divider(56, "_");
+    p_headertext("THE PROGRAM TOKENS");
+    p_divider(56, "_");
     for(int i=0; i<tokentablen-1; i++) {
         p_spaces(11-strlen(tokentab[i].text));
         printf("%s", tokentab[i].text);
         p_spaces(5-count_digits(tokentab[i].token));
         printf("%d \n", tokentab[i].token);
     }
-    p_newline(56, "_");
+    p_divider(56, "_");
 }
 
 /**********************************************************************/
@@ -144,6 +139,11 @@ static int is_number(char * str)
 
 toktyp lex2tok(char * fplex)
 {
+    /*if user has named its IDs same as lexeme for some tokens
+    Have to return her depending on other tests */
+    if(!strcmp(fplex, "number")) { 
+        return id;
+    }
     // check for lexeme in tokentable
     for(int i = 0; i < tokentablen; i++) {
         if(strcmp(fplex, tokentab[i].text) == 0) {
@@ -157,8 +157,10 @@ toktyp lex2tok(char * fplex)
         }
     }
     // if no matching lexeme found in tables, final check if lexeme is number 
-    if(is_number(fplex)) 
-        return number; 
+    if(is_number(fplex)) {
+        return number;
+    }
+         
     return id;
 }
 
