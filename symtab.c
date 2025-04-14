@@ -170,12 +170,9 @@ int find_name(char * fpname);
 void addp_name(char * fpname)
 {
     if(numrows==0)
-        initst();
-
+        initst(); 
     if(!find_name(fpname)) 
         addrow(fpname, program, program, 0, 0);
-    else 
-        perror("addp_name() Tried to add program name that's already in list");
     startp = get_ref(fpname);
 }
 

@@ -1,0 +1,21 @@
+testa:
+Program does not contain anything. (except for added '$' added by lexer)
+In this case the problem was that if alot of spaces was read.. -> my lexer added a space as the first character after one iteration. A space character is by the keytoktab later interpreted as an id. This is an problem....
+1. added check before special character if that it doesn't activate if space charachter is present. 2. Added '\0' and '\v' as space characters. 
+3. made an easy fix by checking for lookahead thats done in parser function if token is '$'. The abot parsing and writing syntax error. 
+
+
+testb:
+program keyword missing. makes that lookahead is one step before all the time. Same problem with other missing parts in other tests. What to do with lookahead if error in match?. How long should it stop from changing. Also error messages shuld change from Unexpexed to Syntax. 
+Fixed alot of spaces to correspond to tests outfiles. 
+Added if statement before matching program. adding program to the symtab.
+
+Big questionmark. Changed locatin where lookahead is updated via get_token(). No it gets called within the if statement i match where a correct match is found. So if syntax error is happeing lookahead will not update. Works fine if there is only one error, will see if it changes...
+
+testc:
+Same, added if statement after program match, before id match to make sure that program is added to symtab. If no program id exist the name "program" will be used. also if statement to check that program wasn't added to symtab before.
+
+testd-testj: worked fine with above changes. 
+
+
+

@@ -55,19 +55,23 @@ static void p_divider(int num, char * symbol)
 {
     for(int i = 0; i < num; i++) {
         printf("%s", symbol);
-    } printf(" \n");
+    }
+    printf(" ");
 }
 
 static void p_headertext(char *headline) 
 {
-    printf(" %s \n", headline);
+    printf(" %s\n", headline);
 }
 
 static void pbuffer()
 {
+    printf("\n");
     p_divider(56, "_");
+    printf("\n");
     p_headertext("THE PROGRAM TEXT");
     p_divider(56, "_");
+    printf("\n");
     for(int i=0; i<BUFSIZE; i++) {
         printf("%c", buffer[i]);
         if(buffer[i] == '$') {
@@ -125,7 +129,8 @@ static int lex_is_special()
 
 static int is_space(char ch) {
     if(ch == ' ' || ch == '\t' || 
-        ch == '\n' || ch == '\r') 
+        ch == '\n' || ch == '\r' || ch == '\0' ||
+        ch == '\v') 
     {
         return 1; 
     }
@@ -139,10 +144,11 @@ static void ignore_spaces()
         get_char();
     }
     char ch = lexbuf[plex-1];
-    get_lexeme();
-    lexbuf[plex] = ch;
-    lexbuf[plex+1] = '\0';
+    memset(lexbuf, '\0', LEXSIZE); // deletes what's currenly in lexbuf (hopefully just spaces)
+    plex = 0;
+    lexbuf[plex] = ch; // adds char to start
     plex++;
+    lexbuf[plex] = '\0';
 }
 
 /**********************************************************************/
@@ -153,9 +159,13 @@ static void ignore_spaces()
 /**********************************************************************/
 int get_token()
 {
-    if(pbuf==0) {
+    if(pbuf==0) { // if it is the first call to function. 
         get_prog();
         pbuffer();
+    }
+    if(plex != 0) {
+        memset(lexbuf, 0, LEXSIZE); // deletes what's currenly in lexbuf
+        plex = 0;
     }
     get_char();
     if(is_space(lexbuf[plex-1])) {
@@ -168,10 +178,9 @@ int get_token()
     else if (isdigit(lexbuf[plex-1])) {
         return lex_is_number();
     } 
-    else {
+    else if (!is_space(lexbuf[plex-1])) {
         return lex_is_special();
     }
-    
     return 0;
 }
 
@@ -180,11 +189,10 @@ int get_token()
 /**********************************************************************/
 char * get_lexeme()
 {
-    static char tempbuf[LEXSIZE];
-    strncpy(tempbuf, lexbuf, LEXSIZE);
-    memset(lexbuf, 0, LEXSIZE); // deletes what's currenly in lexbuf
-    plex = 0;
-    return tempbuf;
+    if(pbuf == 0) { // is called because get_token has the functionality to start lexer and get first token.
+        get_token();
+    }
+    return lexbuf;
 }
 
 /**********************************************************************/
