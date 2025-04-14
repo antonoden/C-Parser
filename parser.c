@@ -77,13 +77,16 @@ static toktyp operand()
     if(lookahead == number) {
         type = integer; // what if real or boolean? 
         match(number);
-    } else {
+    } else if (lookahead == id) {
         if(!find_name(get_lexeme())) {
-            printf("\nSEMANTIC: ID NOT declared: %s\n", get_lexeme());
+            printf("\nSEMANTIC: ID NOT declared: %s", get_lexeme());
             is_parse_ok=0;
         }
         type = get_ntype(get_lexeme());
         match(id);
+    } else {
+        printf("\nSYNTAX:	Operand expected");
+        type = error;
     }
     if(DEEPDEBUG) out("operand");
     return type;
@@ -136,16 +139,21 @@ static void assign_stat()
 {
     toktyp result, arg;
     if(DEEPDEBUG) in("assign_stat");
-    if(!find_name(get_lexeme())) {
-        printf("\nSEMANTIC: ID NOT declared: %s\n", get_lexeme());
+    if(lex2tok(get_lexeme()) == id) {
+        if(!find_name(get_lexeme())) {
+            printf("\nSEMANTIC: ID NOT declared: %s", get_lexeme());
+            is_parse_ok=0;
+        }
+        result = get_ntype(get_lexeme());
+    } else {
+        result = error;
         is_parse_ok=0;
     }
-    result = get_ntype(get_lexeme());
     match(id); 
     match(assign); 
     arg = expr();
     if(result != arg) {
-        printf("SEMANTIC: Assign types: %s := %s", tok2lex(result), tok2lex(arg));
+        printf("\nSEMANTIC: Assign types: %s := %s", tok2lex(result), tok2lex(arg));
         // if not both arg and result is integer or real parse is not ok. 
         if(!((result == integer || result == real) && 
             (arg == integer || arg == real))) {
@@ -176,7 +184,7 @@ static void stat_part()
 {
     if(DEEPDEBUG) in("stat_part");
     match(begin); stat_list(); match(end); match('.');
-    if(DEEPDEBUG) out("stat_part");
+    if(DEEPDEBUG) out("stat_part\n");
 }
 /* END STATEMENT PART */
 
@@ -210,7 +218,7 @@ static void id_list()
         if(!find_name(get_lexeme())) {
             addv_name(get_lexeme());
         } else {
-            printf("SEMANTIC: ID already declared: %s", get_lexeme());
+            printf("\nSEMANTIC: ID already declared: %s", get_lexeme());
             is_parse_ok=0;
         }
     } 
@@ -244,7 +252,7 @@ static void var_part()
     if(DEEPDEBUG) in("var_part");
     match(var); 
     var_dec_list();
-    if(DEEPDEBUG) out("var_part");
+    if(DEEPDEBUG) out("var_part\n");
 }
 /* END OF VARIABLE PART */
 
@@ -262,7 +270,7 @@ static void prog_header()
     match('('); match(input);
     match(','); match(output); match(')'); match(';');
 
-    if(DEEPDEBUG) out("program_header");
+    if(DEEPDEBUG) out("program_header\n");
 }
 
 static void p_divider(int num, char * symbol)
@@ -275,9 +283,19 @@ static void p_divider(int num, char * symbol)
 
 static void program_header()
 {
-    prog_header(); printf("\n");
-    var_part(); printf("\n");
-    stat_part(); printf("\n"); p_divider(56, "_");
+    prog_header();
+    var_part();
+    stat_part();
+    if(strcmp(get_lexeme(), "$") != 0) {
+        is_parse_ok=0;
+        printf("\nSYNTAX:	Extra symbols after end of parse!\n\t");
+        while(strcmp(get_lexeme(), "$") != 0) {
+            printf("%s ", get_lexeme());
+            get_token();
+        }
+    }
+    printf("\n"); 
+    p_divider(56, "_");
 }
 
 
