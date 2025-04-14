@@ -69,10 +69,7 @@ static tab keywordtab[ ] = {
 long int keywordtablen = sizeof(keywordtab)/sizeof(tab);
 
 /**********************************************************************/
-/*  PUBLIC METHODS for this OBJECT  (EXPORTED)                        */
-/**********************************************************************/
-/**********************************************************************/
-/* Display the tables                                                 */
+/*  PRIVATE METHODS for this OBJECT                                     */
 /**********************************************************************/
 static void p_divider(int num, char * symbol)
 {
@@ -103,6 +100,26 @@ static int count_digits(int number)
     return count;
 }
 
+static int is_number(char * str) 
+{
+    if(*str == '\0') return 0; // empty string != number
+
+    while (*str && *str != '\0') {
+        if (!isdigit(*str)) return 0; // found a non-digit character
+        str ++;
+    }
+    return 1; // string contains only digits
+}
+
+/**********************************************************************/
+/*  PUBLIC METHODS for this OBJECT  (EXPORTED)                        */
+/**********************************************************************/
+
+/**********************************************************************/
+/* Display the tables                                                 */
+/**********************************************************************/
+
+
 void p_toktab()
 {
     p_divider(56, "_");
@@ -127,16 +144,6 @@ void p_toktab()
 /**********************************************************************/
 /* lex2tok - convert a lexeme to a token                              */
 /**********************************************************************/
-static int is_number(char * str) 
-{
-    if(*str == '\0') return 0; // empty string != number
-
-    while (*str && *str != '\0') {
-        if (!isdigit(*str)) return 0; // found a non-digit character
-        str ++;
-    }
-    return 1; // string contains only digits
-}
 
 toktyp lex2tok(char * fplex)
 {

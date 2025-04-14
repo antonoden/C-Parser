@@ -102,11 +102,9 @@ static int get_program_size()
     }
     return bytes;
 }
+
 /**********************************************************************/
-/*  PUBLIC METHODS for this OBJECT  (EXPORTED)                        */
-/**********************************************************************/
-/**********************************************************************/
-/*  Display the symbol table                                          */
+/*  functions to help with printing of table                        */
 /**********************************************************************/
 static void p_divider(int num, char * symbol)
 {
@@ -146,6 +144,13 @@ static void p_symrow(int ftref)
     p_column(stringify(get_addr(ftref), straddr, sizeof(straddr)), 10);
     printf(" \n");
 }
+
+/**********************************************************************/
+/*  PUBLIC METHODS for this OBJECT  (EXPORTED)                        */
+/**********************************************************************/
+/**********************************************************************/
+/*  Display the symbol table                                          */
+/**********************************************************************/
 
 void p_symtab()
 {
@@ -231,7 +236,9 @@ void setv_type(toktyp ftype)
 /**********************************************************************/
 toktyp get_ntype(char * fpname)
 {
-    return get_type(get_ref(fpname));
+    return find_name(fpname) ?
+        get_type(get_ref(fpname))
+        : undef;
 }
 
 /**********************************************************************/

@@ -16,7 +16,7 @@
 #include "keytoktab.h"
 #include "lexer.h"  
 #include "symtab.h"    
-/* #include "optab.h"       */       /* when the optab     is added   */
+#include "optab.h"            
 
 /**********************************************************************/
 /* OBJECT ATTRIBUTES FOR THIS OBJECT (C MODULE)                       */
@@ -53,7 +53,7 @@ static void match(int t)
     if (lookahead != t) {
         if(DEEPDEBUG) in("match");
         is_parse_ok=0;
-        printf("\nSYNTAX:   Symbol expected %s found %s ",
+        printf("\nSYNTAX:\tSymbol expected %s found %s",
             tok2lex(t), get_lexeme());
     } else {
         if(DEBUG) printf("\n *** In  match      expected %s found %s ",
@@ -68,59 +68,90 @@ static void match(int t)
 /**********************************************************************/
 
 /* STAT STATEMENT PART */
-static void expr();
-static void operand()
+static toktyp expr();
+
+static toktyp operand()
 {
+    toktyp type;
     if(DEEPDEBUG) in("operand");
     if(lookahead == number) {
+        type = integer; // what if real or boolean? 
         match(number);
     } else {
         if(!find_name(get_lexeme())) {
-            printf("\n *** Undeclared variable: %s (in operand)\n", get_lexeme());
+            printf("\nSEMANTIC: ID NOT declared: %s\n", get_lexeme());
+            is_parse_ok=0;
         }
+        type = get_ntype(get_lexeme());
         match(id);
     }
     if(DEEPDEBUG) out("operand");
+    return type;
 }
 
-static void factor()
+static toktyp factor()
 {
+    toktyp type;
     if(DEEPDEBUG) in("factor");
     if(lookahead == '(') {
-        match('('); expr(); match(')');
+        match('('); type = expr(); match(')');
     } else {
-        operand();
+        type = operand();
     }
     if(DEEPDEBUG) out("factor");
+    return type;
 }
 
-static void term()
+static toktyp term()
 {
-    if(DEEPDEBUG) in("term");
-    factor();
+    toktyp arg1, arg2, result;
+    if(DEEPDEBUG) in("term"); 
+    arg1 = factor();
     if(lookahead == '*') {
-        match('*'); term();
+        match('*'); arg2 = term();
+        result = get_otype('*', arg1, arg2); 
+    } else {
+        result = arg1;
     }
     if(DEEPDEBUG) out("term");
+    return result;
 }
 
-static void expr() 
+static toktyp expr() 
 {
+    toktyp arg1, arg2, result;
     if(DEEPDEBUG) in("expr");
-    term();
+    arg1 = term();
     if(lookahead == '+') {
-        match('+'); expr();
+        match('+'); arg2 = expr();
+        result = get_otype('+', arg1, arg2);
+    } else {
+        result = arg1;
     }
     if(DEEPDEBUG) out("expr");
+    return result;
 }
 
 static void assign_stat() 
 {
+    toktyp result, arg;
     if(DEEPDEBUG) in("assign_stat");
     if(!find_name(get_lexeme())) {
-        printf("\n *** Undeclared variable: %s (in assign_stat)\n", get_lexeme());
+        printf("\nSEMANTIC: ID NOT declared: %s\n", get_lexeme());
+        is_parse_ok=0;
     }
-    match(id); match(assign); expr();
+    result = get_ntype(get_lexeme());
+    match(id); 
+    match(assign); 
+    arg = expr();
+    if(result != arg) {
+        printf("SEMANTIC: Assign types: %s := %s", tok2lex(result), tok2lex(arg));
+        // if not both arg and result is integer or real parse is not ok. 
+        if(!((result == integer || result == real) && 
+            (arg == integer || arg == real))) {
+                is_parse_ok=0;
+        }
+    }
     if(DEEPDEBUG) out("assign_stat");
 }
 
@@ -164,6 +195,10 @@ static void type()
     else if (lookahead == boolean) {
         setv_type(boolean);
         match(boolean);
+    } else {
+        setv_type(error);
+        printf("\nSYNTAX:	Type name expected found  %s", get_lexeme());
+        is_parse_ok=0;
     }
     if(DEEPDEBUG) out("type");
 }
@@ -171,8 +206,14 @@ static void type()
 static void id_list() 
 {
     if(DEEPDEBUG) in("id_list");
-    if(lex2tok(get_lexeme()) == id && !find_name(get_lexeme())) 
-        addv_name(get_lexeme());
+    if(lex2tok(get_lexeme()) == id) {
+        if(!find_name(get_lexeme())) {
+            addv_name(get_lexeme());
+        } else {
+            printf("SEMANTIC: ID already declared: %s", get_lexeme());
+            is_parse_ok=0;
+        }
+    } 
     match(id);
     if(lookahead == ',') {
         match(',');
