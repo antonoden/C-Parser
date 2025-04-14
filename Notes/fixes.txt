@@ -17,5 +17,6 @@ Same, added if statement after program match, before id match to make sure that 
 
 testd-testj: worked fine with above changes. 
 
+testk: Semantic problems comes in. Implement optab. 
 
 
