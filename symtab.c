@@ -221,9 +221,7 @@ void setv_type(toktyp ftype)
             set_size(i, ftypesize);
             if(i==startp+1)     // different cases of addr setting for first two variables
                 set_addr(i, 0);
-            else if(i==startp+2)
-                set_addr(i, ftypesize);
-            else
+            else 
                 set_addr(i, get_addr(i-1)+get_size(i-1));
             // update size of program
             set_size(startp, ftypesize+get_size(startp));

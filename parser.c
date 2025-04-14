@@ -139,15 +139,14 @@ static void assign_stat()
 {
     toktyp result, arg;
     if(DEEPDEBUG) in("assign_stat");
-    if(lex2tok(get_lexeme()) == id) {
-        if(!find_name(get_lexeme())) {
-            printf("\nSEMANTIC: ID NOT declared: %s", get_lexeme());
-            is_parse_ok=0;
-        }
+    if(find_name(get_lexeme())) {
         result = get_ntype(get_lexeme());
     } else {
-        result = error;
+        if(!find_name(get_lexeme()) && lex2tok(get_lexeme()) == id) {
+            printf("\nSEMANTIC: ID NOT declared: %s", get_lexeme());
+        }
         is_parse_ok=0;
+        result = error;
     }
     match(id); 
     match(assign); 
@@ -192,18 +191,18 @@ static void stat_part()
 static void type()
 {
     if(DEEPDEBUG) in("type");
-    if(lookahead == integer) {
+    if(lookahead == integer) { // type is integer
         setv_type(integer);
         match(integer);
     }
-    else if (lookahead == real) {
+    else if (lookahead == real) {   // type is real
         setv_type(real);
         match(real);
     }
-    else if (lookahead == boolean) {
+    else if (lookahead == boolean) {  // type is boolean
         setv_type(boolean);
         match(boolean);
-    } else {
+    } else {               // type is not valid type 
         setv_type(error);
         printf("\nSYNTAX:	Type name expected found  %s", get_lexeme());
         is_parse_ok=0;
@@ -263,7 +262,7 @@ static void prog_header()
         addp_name(get_lexeme());
     match(program);
     if(lex2tok(get_lexeme()) != id) // if no id for program exist
-        addp_name(tok2lex(program));
+        addp_name("???");
     else if(!find_name(get_lexeme())) // just add program id if it has not been added before
         addp_name(get_lexeme());
     match(id);
@@ -307,8 +306,11 @@ int parser()
 {
     in("Parser");
     lookahead = get_token();       // get the first token
-    if((lookahead == '$')) // end of program sign == program empty
-        printf("SYNTAX:   Input file is empty\n");
+    if((lookahead == '$')) { // end of program sign == program empty
+        printf("\nWARNING:  Input file is empty\n");
+        p_divider(56, "_");
+        is_parse_ok = 0;
+    }
     else 
         program_header();               // call the first grammar rule
     p_symtab();
